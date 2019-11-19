@@ -1,0 +1,73 @@
+import numpy as np;
+import pandas as pd;
+import matplotlib.pyplot as plt;
+df=pd.read_excel("D:\pythondata\perceptrondata.xls");
+df=pd.DataFrame(df);
+x=df.values[:,:-1];#切片，分割特征向量x和对应的类别y
+y=df.values[:,-1];
+xy=x.shape;#输出x的行数和列数
+n=xy[0];#代表特征向量x的行数
+m=xy[1];#代表特征向量x的列数
+a=[];
+b=0;
+for i in range(n):
+    a.append(0);
+g=np.zeros((n,n));
+for i in range(n):
+    for j in range(n):
+        for l in range(m):
+            g[i][j]=g[i][j]+x[i][l]*x[j][l];#计算Gram矩阵
+k=1;
+while (k==1):#当样本中存在误分点时
+    k=0;#本次循环中样本假设不存在误分点
+    for i in range(n):
+        t=0;
+        for j in range(n):
+            t=t+g[i][j]*y[j]*a[j];
+        if (y[i]*(t+b)<=0):
+            a[i]=a[i]+1;#计算a[i]的值
+            b=b+y[i];#计算b的值
+            k=1;#样本中存在误分点
+w=[];
+for j in range(m):
+    w.append(0);
+for j in range(m):
+    for i in range(n):
+        w[j]=w[j]+a[i]*x[i][j]*y[i];
+print("分离超平面的法向量w=",w,",截距b=",b)
+
+
+def plot_and_scatter(df=None,w=0,b=0):
+    xmin=df.values[:,:-1].min();
+    xmax=df.values[:,:-1].max();
+    xdiff=(xmax-xmin)*0.5;
+    xx=np.linspace((xmin-xdiff),(xmax+xdiff),100);
+    yy=-b-w[1]*xx;
+    plt.figure();
+    plt.xlabel("X(1)");
+    plt.ylabel("X(2)");#设置坐标轴的文字标签
+    ax=plt.gca();# get current axis 获得坐标轴对象
+    ax.spines["right"].set_color("none");
+    ax.spines["top"].set_color("none"); # 将右边 上边的两条边颜色设置为空 其实就相当于抹掉这两条边
+    ax.xaxis.set_ticks_position("bottom");
+    ax.yaxis.set_ticks_position("left");
+    ax.spines["bottom"].set_position(("data",0));
+    ax.spines["left"].set_position(("data",0));#指定 data设置的bottom(也就是指定的x轴)绑定到y轴的0这个点上
+    plt.plot(xx,yy,"r");
+    color_list=["blue","green","black","pink","orange"];
+    y=df.values[:,-1];
+
+    a=set(y);
+    a=list(a);
+    y_num=len(a);
+    t=0;
+    for j in range(y_num):
+        tt=a[j];
+        y_index=[i for i,y in enumerate(y) if y==tt];
+        x_group1=df.values[y_index,0];
+        x_group2=df.values[y_index,1];
+        plt.scatter(x_group1,x_group2);
+        t=t+1;
+
+plot_and_scatter(df,w,b);
+plt.show();
